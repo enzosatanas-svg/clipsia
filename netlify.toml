@@ -4,7 +4,6 @@
 
 [build]
   publish = "public"
-  command = "# Static HTML5/CSS3/JS site"
 
 [[headers]]
   for = "/*"
