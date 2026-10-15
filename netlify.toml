@@ -1,0 +1,21 @@
+# ==============================================================================
+# ClipAI Generator — Netlify Root Configuration
+# ==============================================================================
+
+[build]
+  publish = "public"
+  command = "# Static HTML5/CSS3/JS site"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS, PUT, DELETE"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With"
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
