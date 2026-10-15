@@ -44,7 +44,7 @@ setup.bat
 El instalador verificará e instalará automáticamente:
 - Python 3.11 (vía winget si no está presente)
 - FFmpeg (vía winget si no está presente)
-- Dependencias de `requirements.txt`
+- Dependencias de `backend/requirements.txt`
 - Creará el archivo `.env`
 - Iniciará el backend FastAPI y el frontend Streamlit
 
@@ -52,7 +52,7 @@ El instalador verificará e instalará automáticamente:
 1. Clona o abre la carpeta del proyecto.
 2. Instala las dependencias:
    ```bash
-   pip install -r requirements.txt
+   pip install -r backend/requirements.txt
    ```
 3. Inicia el backend de FastAPI:
    ```bash
@@ -79,6 +79,7 @@ CafeCamilo/
 │   │   ├── process.py           # Detección de clips virales y generación de hooks
 │   │   ├── clips.py             # Renderizado 9:16, subtítulos ASS y biblioteca
 │   │   └── publish.py           # Publicación en YouTube Shorts, TikTok y Reels
+│   ├── requirements.txt         # Dependencias Python del proyecto
 │   └── __init__.py
 ├── frontend/
 │   ├── app.py                   # Dashboard visual Streamlit con 6 pestañas
@@ -86,7 +87,6 @@ CafeCamilo/
 ├── downloads/                   # Almacén temporal de videos y audios descargados
 ├── output/                      # Almacén de clips renderizados y miniaturas
 ├── .env.example                 # Variables de entorno y claves API
-├── requirements.txt             # Dependencias del proyecto
 ├── setup.bat                    # Script de instalación y arranque para Windows
 └── run.bat                      # Lanzador rápido
 ```
