@@ -66,7 +66,7 @@ call .venv\Scripts\activate.bat
 :: Install Python dependencies
 echo.
 echo [INFO] Instalando dependencias Python en .venv...
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 IF ERRORLEVEL 1 (
     echo [ERROR] Fallo al instalar dependencias.
     pause
