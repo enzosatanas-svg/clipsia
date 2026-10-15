@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClipAI Generator — Generador Autónomo de Clips Virales 9:16</title>
+    <meta name="description" content="Transforma videos largos de YouTube en clips virales verticales 9:16 con subtítulos dinámicos estilo Alex Hormozi para TikTok, Shorts y Reels.">
+    
+    <!-- Open Graph / Meta Social -->
+    <meta property="og:title" content="ClipAI Generator — De YouTube a Clips Virales en 1 Clic">
+    <meta property="og:description" content="Motor autónomo multi-agente para generar shorts 9:16 con subtítulos animados e inteligencia artificial.">
+    <meta property="og:type" content="website">
+
+    <!-- Google Fonts: Outfit & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <span class="brand-icon">🎬</span>
+                <span class="brand-name">ClipAI <span class="gradient-text">Studio</span></span>
+                <span class="badge-tag">v1.2</span>
+            </div>
+            <div class="nav-actions">
+                <div id="backendStatusPill" class="status-pill status-checking">
+                    <span class="status-dot"></span>
+                    <span id="backendStatusText">Verificando Backend...</span>
+                </div>
+                <button id="btnOpenConfig" class="btn-icon" title="Configurar URL del Backend">
+                    ⚙️ <span class="btn-text">API</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-badge">⚡ 100% AUTÓNOMO • MULTI-AGENTE AI</div>
+            <h1 class="hero-title">Genera Clips Virales en <span class="gradient-text">Formato 9:16</span></h1>
+            <p class="hero-desc">
+                Pega la URL de cualquier video de YouTube. El sistema descarga, analiza el diálogo internamente en segundo plano, detecta los momentos virales y renderiza videos verticales con subtítulos animados estilo <strong>Alex Hormozi</strong>.
+            </p>
+        </section>
+
+        <!-- Generation Studio Form Card -->
+        <section class="card glass-card form-card">
+            <form id="clipForm" autocomplete="off">
+                <div class="form-group input-hero-group">
+                    <label for="ytUrl">🔗 Enlace del Video de YouTube</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="url" 
+                            id="ytUrl" 
+                            placeholder="https://www.youtube.com/watch?v=... o https://youtu.be/..." 
+                            required
+                        >
+                        <button type="button" id="btnClearUrl" class="btn-clear" title="Limpiar campo">✕</button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="maxClips">📊 Cantidad de Clips</label>
+                        <select id="maxClips">
+                            <option value="1">1 Clip (Ultrarrápido)</option>
+                            <option value="2">2 Clips</option>
+                            <option value="3" selected>3 Clips Virales (Recomendado)</option>
+                            <option value="4">4 Clips</option>
+                            <option value="5">5 Clips</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subtitleStyle">🔥 Estilo de Subtítulos</label>
+                        <select id="subtitleStyle">
+                            <option value="alex_hormozi" selected>🔥 Alex Hormozi (Emojis + Resaltado)</option>
+                            <option value="alex_hormozi_green">🚀 Hormozi Verde Neón</option>
+                            <option value="tiktok_yellow">🟡 TikTok Amarillo Clásico</option>
+                            <option value="neon_cyan">💎 Cian Neón Alto Contraste</option>
+                            <option value="clean_white">⚪ Blanco Minimalista</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="layoutMode">📱 Encuadre 9:16</label>
+                        <select id="layoutMode">
+                            <option value="autoframing" selected>📱 Auto-Framing Facial IA (MediaPipe)</option>
+                            <option value="blur_bg">🌌 Fondo Desenfocado Dinámico</option>
+                            <option value="crop">✂️ Recorte Centrado 9:16</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-submit">
+                    <button type="submit" id="btnSubmit" class="btn-primary btn-glow">
+                        <span class="btn-icon-label">⚡</span>
+                        <span id="btnSubmitText">GENERAR CLIPS VIRALES 9:16</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Live Progress Section (Hidden by default) -->
+        <section id="progressSection" class="card glass-card progress-card hidden">
+            <div class="progress-header">
+                <div class="progress-title-wrap">
+                    <span class="spinner-pulse"></span>
+                    <h3 id="progressTitle" class="progress-title">Procesando video con IA...</h3>
+                </div>
+                <span id="progressPercent" class="progress-percent">0%</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-track">
+                <div id="progressBar" class="progress-fill"></div>
+            </div>
+
+            <!-- 4-Step Visual Tracker -->
+            <div class="steps-tracker">
+                <div id="step1" class="step-item">
+                    <div class="step-circle">1</div>
+                    <span class="step-label">📥 Descarga HD</span>
+                </div>
+                <div class="step-line"></div>
+                <div id="step2" class="step-item">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">🎙️ Whisper IA</span>
+                </div>
+                <div class="step-line"></div>
+                <div id="step3" class="step-item">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">🔥 Momentos Virales</span>
+                </div>
+                <div class="step-line"></div>
+                <div id="step4" class="step-item">
+                    <div class="step-circle">4</div>
+                    <span class="step-label">🎬 Render 9:16</span>
+                </div>
+            </div>
+
+            <p id="progressMessage" class="progress-message">Iniciando pipeline de corte y renderizado...</p>
+        </section>
+
+        <!-- Error Card (Hidden by default) -->
+        <section id="errorSection" class="card error-card hidden">
+            <div class="error-icon">⚠️</div>
+            <div class="error-body">
+                <h4 class="error-title">Ocurrió un inconveniente</h4>
+                <p id="errorMessageText" class="error-text">No se pudo conectar con el servidor.</p>
+            </div>
+            <button id="btnRetry" class="btn-secondary">Reintentar</button>
+        </section>
+
+        <!-- Results Gallery Section (Hidden by default) -->
+        <section id="resultsSection" class="results-section hidden">
+            <div class="results-banner">
+                <div class="results-banner-icon">🎉</div>
+                <div class="results-banner-content">
+                    <h2 class="results-title">¡Tus clips virales están listos!</h2>
+                    <p id="resultsSubtitle" class="results-subtitle">
+                        Videos recortados a 9:16 vertical con subtítulos quemados y ganchos optimizados.
+                    </p>
+                </div>
+                <button id="btnNewVideo" class="btn-secondary">✨ Nuevo Video</button>
+            </div>
+
+            <!-- Grid of Rendered Clips -->
+            <div id="clipsGallery" class="clips-gallery">
+                <!-- Dynamically generated clip cards will be inserted here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>🎬 <strong>ClipAI Generator</strong> • Sistema Multi-Agente de Videos Virales 9:16</p>
+        <p class="footer-sub">Frontend estático preparado para Netlify y GitHub Pages • Conexión vía API REST</p>
+    </footer>
+
+    <!-- Settings Modal -->
+    <div id="configModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>⚙️ Configuración del Backend</h3>
+                <button id="btnCloseModal" class="btn-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">
+                    Especifica la URL pública o local del backend FastAPI donde está ejecutándose el servicio de renderizado (FastAPI / Uvicorn).
+                </p>
+                <div class="form-group">
+                    <label for="apiUrlInput">URL del Backend (API Base URL):</label>
+                    <input type="url" id="apiUrlInput" placeholder="http://localhost:8000" value="http://localhost:8000">
+                    <small class="help-text">Ejemplo local: <code>http://localhost:8000</code> | Remoto: <code>https://tu-backend.onrender.com</code></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnSaveConfig" class="btn-primary">Guardar y Probar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toastIcon">📋</span>
+        <span id="toastMsg">Copiado al portapapeles</span>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
