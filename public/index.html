@@ -30,6 +30,12 @@
                 <span class="badge-tag">v1.2</span>
             </div>
             <div class="nav-actions">
+                <button id="btnNavLibrary" class="btn-icon" title="Ver Biblioteca de Clips">
+                    📚 <span class="btn-text">Biblioteca (<span id="libraryCountBadge">0</span>)</span>
+                </button>
+                <button id="refresh-library-btn" class="btn-icon" title="Refrescar Biblioteca">
+                    🔄 <span class="btn-text">Refrescar</span>
+                </button>
                 <div id="backendStatusPill" class="status-pill status-checking">
                     <span class="status-dot"></span>
                     <span id="backendStatusText">Verificando Backend...</span>
@@ -162,23 +168,40 @@
             <button id="btnRetry" class="btn-secondary">Reintentar</button>
         </section>
 
-        <!-- Results Gallery Section (Hidden by default) -->
+        <!-- Results Gallery Section (Hidden by default until generation or library load) -->
         <section id="resultsSection" class="results-section hidden">
             <div class="results-banner">
-                <div class="results-banner-icon">🎉</div>
+                <div id="resultsBannerIcon" class="results-banner-icon">📚</div>
                 <div class="results-banner-content">
-                    <h2 class="results-title">¡Tus clips virales están listos!</h2>
+                    <h2 id="resultsTitle" class="results-title">📚 Biblioteca de Clips Virales 9:16</h2>
                     <p id="resultsSubtitle" class="results-subtitle">
                         Videos recortados a 9:16 vertical con subtítulos quemados y ganchos optimizados.
                     </p>
                 </div>
-                <button id="btnNewVideo" class="btn-secondary">✨ Nuevo Video</button>
+                <div class="results-banner-actions">
+                    <button id="btnBannerRefresh" class="btn-secondary" title="Actualizar lista de clips">🔄 Actualizar</button>
+                    <button id="btnNewVideo" class="btn-secondary">✨ Nuevo Video</button>
+                </div>
             </div>
 
-            <!-- Grid of Rendered Clips -->
-            <div id="clipsGallery" class="clips-gallery">
+            <!-- Library Search & Toolbar -->
+            <div class="library-toolbar">
+                <div class="library-search-wrapper">
+                    <input 
+                        type="text" 
+                        id="librarySearchInput" 
+                        class="library-search-input" 
+                        placeholder="🔍 Filtrar clips por título, gancho o nicho..."
+                    >
+                </div>
+                <span id="libraryFilteredCount" class="library-filtered-count">Cargando clips...</span>
+            </div>
+
+            <!-- Grid of Rendered Clips (compatible with both clipsGallery and clips-grid) -->
+            <div id="clipsGallery" class="clips-gallery clips-grid">
                 <!-- Dynamically generated clip cards will be inserted here -->
             </div>
+            <div id="clips-grid" class="hidden"></div>
         </section>
 
     </main>

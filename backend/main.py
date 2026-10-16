@@ -129,6 +129,7 @@ def _enrich_clip_metadata(filename: str, file_path: Path) -> dict:
         "description": description,
         "hashtags": hashtags,
         "size_mb": file_size_mb,
+        "size": f"{file_size_mb} MB",
         "created_at": created_str,
         "clip_index": int(clip_num) if clip_num.isdigit() else 1,
         "ai_copy": ai_copy,

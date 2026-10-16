@@ -16,6 +16,7 @@ let state = {
     activeJobId: null,
     pollTimer: null,
     backendOnline: false,
+    libraryClips: [],
 };
 
 // DOM Elements
@@ -24,6 +25,9 @@ const DOM = {
     backendStatusPill: document.getElementById('backendStatusPill'),
     backendStatusText: document.getElementById('backendStatusText'),
     btnOpenConfig: document.getElementById('btnOpenConfig'),
+    btnNavLibrary: document.getElementById('btnNavLibrary'),
+    refreshLibraryBtn: document.getElementById('refresh-library-btn'),
+    libraryCountBadge: document.getElementById('libraryCountBadge'),
     // Form
     clipForm: document.getElementById('clipForm'),
     ytUrl: document.getElementById('ytUrl'),
@@ -47,11 +51,16 @@ const DOM = {
     errorSection: document.getElementById('errorSection'),
     errorMessageText: document.getElementById('errorMessageText'),
     btnRetry: document.getElementById('btnRetry'),
-    // Results
+    // Results & Library
     resultsSection: document.getElementById('resultsSection'),
+    resultsTitle: document.getElementById('resultsTitle'),
     resultsSubtitle: document.getElementById('resultsSubtitle'),
     clipsGallery: document.getElementById('clipsGallery'),
+    clipsGrid: document.getElementById('clips-grid'),
     btnNewVideo: document.getElementById('btnNewVideo'),
+    btnBannerRefresh: document.getElementById('btnBannerRefresh'),
+    librarySearchInput: document.getElementById('librarySearchInput'),
+    libraryFilteredCount: document.getElementById('libraryFilteredCount'),
     // Modal
     configModal: document.getElementById('configModal'),
     apiUrlInput: document.getElementById('apiUrlInput'),
@@ -129,6 +138,34 @@ function initEventListeners() {
             DOM.configModal.classList.add('hidden');
         }
     });
+
+    // Real-time Search filter for library clips
+    if (DOM.librarySearchInput) {
+        DOM.librarySearchInput.addEventListener('input', renderFilteredClips);
+    }
+
+    // Refresh library handlers
+    const triggerRefresh = (e) => {
+        if (e) e.preventDefault();
+        showToast('🔄 Actualizando biblioteca...');
+        loadLibrary(true);
+    };
+    if (DOM.refreshLibraryBtn) {
+        DOM.refreshLibraryBtn.addEventListener('click', triggerRefresh);
+    }
+    if (DOM.btnBannerRefresh) {
+        DOM.btnBannerRefresh.addEventListener('click', triggerRefresh);
+    }
+
+    // Nav Library button: scroll to library
+    if (DOM.btnNavLibrary) {
+        DOM.btnNavLibrary.addEventListener('click', (e) => {
+            e.preventDefault();
+            DOM.resultsSection.classList.remove('hidden');
+            loadLibrary(true);
+            DOM.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
 }
 
 // =============================================================================
@@ -139,6 +176,10 @@ async function checkBackendHealth() {
         const response = await fetch(`${state.apiUrl}/health`, { method: 'GET', mode: 'cors' });
         if (response.ok) {
             setBackendStatus(true, 'Backend Activo');
+            // Cargar biblioteca automáticamente al conectar
+            if (!state.libraryClips || state.libraryClips.length === 0) {
+                loadLibrary();
+            }
         } else {
             setBackendStatus(false, 'Backend Error (' + response.status + ')');
         }
@@ -327,38 +368,95 @@ function updateProgressUI(percent, message, step) {
 // =============================================================================
 // Biblioteca: Carga de clips previos desde /api/library
 // =============================================================================
-async function loadLibrary() {
-    if (!state.backendOnline) return;
-    try {
-        const res = await fetch(`${state.apiUrl}/api/library`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const clips = (data.clips || []).map(c => ({
-            clip_id: c.filename.replace('.mp4', ''),
-            title: c.title,
-            hook: c.hook_text,
-            viral_score: c.viral_score,
-            duration: 0,
-            file_size_mb: c.size_mb,
-            hashtags: c.hashtags ? c.hashtags.split(' ') : ['#viral', '#shorts'],
-            video_url: c.url,
-            thumbnail_url: c.thumbnail_url || null,
-            ai_copy: `🔥 ${c.title}\n\n👀 ${c.hook_text}\n\n${c.description || ''}\n\n${c.hashtags || '#viral #shorts #clipsia'}`,
-            _library_filename: c.filename,
-            niche: c.niche,
-            created_at: c.created_at,
-        }));
+async function loadLibrary(forceShow = false) {
+    const refreshBtns = [DOM.refreshLibraryBtn, DOM.btnBannerRefresh].filter(Boolean);
+    refreshBtns.forEach(b => b.classList.add('loading-spin'));
 
-        if (clips.length > 0) {
-            DOM.resultsSection.classList.remove('hidden');
-            DOM.resultsSubtitle.innerHTML = `
-                📚 Biblioteca de clips guardados — <strong>${clips.length} clips en formato 9:16</strong> disponibles para descargar.
-            `;
-            renderClipsGallery(clips, true);
+    try {
+        const res = await fetch(`${state.apiUrl}/api/library`, { method: 'GET', mode: 'cors' });
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
         }
-    } catch (_) {
-        // Backend offline o sin clips aún — silencioso
+        setBackendStatus(true, 'Backend Activo');
+        const data = await res.json();
+        const rawClips = data.clips || [];
+
+        const clips = rawClips.map((c, idx) => {
+            const rawTags = c.hashtags;
+            let tagsArray = [];
+            if (Array.isArray(rawTags)) {
+                tagsArray = rawTags;
+            } else if (typeof rawTags === 'string') {
+                tagsArray = rawTags.trim().split(/\s+/).filter(Boolean);
+            }
+            if (tagsArray.length === 0) {
+                tagsArray = ['#shorts', '#viral', '#reels', '#tiktok'];
+            }
+
+            const title = c.title || `Momento Viral #${idx + 1}`;
+            const hook = c.hook_text || c.hook || title;
+            const fileSizeMb = c.size_mb || (typeof c.size === 'number' ? c.size : 0);
+            const sizeFormatted = c.size || (fileSizeMb ? `${fileSizeMb} MB` : '');
+
+            return {
+                clip_id: c.filename ? c.filename.replace('.mp4', '') : `clip_${idx + 1}`,
+                title: title,
+                hook: hook,
+                viral_score: c.viral_score || 9.0,
+                duration: parseFloat(c.duration || 0),
+                file_size_mb: fileSizeMb,
+                size: sizeFormatted,
+                hashtags: tagsArray,
+                video_url: c.url || `/clips/${c.filename}`,
+                thumbnail_url: c.thumbnail_url || null,
+                ai_copy: c.ai_copy || null,
+                platforms: c.platforms || {},
+                best_posting_times: c.best_posting_times || null,
+                _library_filename: c.filename,
+                niche: c.niche || 'Interés General',
+                created_at: c.created_at || '',
+            };
+        });
+
+        state.libraryClips = clips;
+
+        if (DOM.libraryCountBadge) {
+            DOM.libraryCountBadge.textContent = clips.length;
+        }
+
+        if (clips.length > 0 || forceShow) {
+            DOM.resultsSection.classList.remove('hidden');
+            if (DOM.resultsTitle) {
+                DOM.resultsTitle.textContent = '📚 Biblioteca de Clips Virales 9:16';
+            }
+            if (DOM.resultsSubtitle) {
+                DOM.resultsSubtitle.innerHTML = `
+                    📚 Biblioteca guardada — <strong>${clips.length} clips en formato vertical 9:16</strong> listos para descargar y compartir.
+                `;
+            }
+            renderFilteredClips();
+        }
+    } catch (err) {
+        console.warn('No se pudo sincronizar la biblioteca con el backend:', err);
+    } finally {
+        refreshBtns.forEach(b => b.classList.remove('loading-spin'));
     }
+}
+
+function renderFilteredClips() {
+    const query = (DOM.librarySearchInput?.value || '').toLowerCase().trim();
+    let filtered = state.libraryClips || [];
+    if (query) {
+        filtered = filtered.filter(c => 
+            (c.title && c.title.toLowerCase().includes(query)) ||
+            (c.hook && c.hook.toLowerCase().includes(query)) ||
+            (c.niche && c.niche.toLowerCase().includes(query))
+        );
+    }
+    if (DOM.libraryFilteredCount) {
+        DOM.libraryFilteredCount.textContent = `Mostrando ${filtered.length} de ${state.libraryClips.length} clips`;
+    }
+    renderClipsGallery(filtered, true);
 }
 
 // =============================================================================
@@ -417,7 +515,10 @@ function renderClipsGallery(clips, fromLibrary = false) {
         const score = clip.viral_score || 9.0;
         const duration = parseFloat(clip.duration || 30).toFixed(1);
         const fileSize = clip.file_size_mb || 0;
-        const hashtagsList = clip.hashtags || ['#shorts', '#viral', '#reels', '#tiktok'];
+        const sizeText = clip.size || (fileSize > 0 ? `${fileSize} MB` : '');
+        const hashtagsList = Array.isArray(clip.hashtags)
+            ? clip.hashtags
+            : (typeof clip.hashtags === 'string' ? clip.hashtags.trim().split(/\s+/) : ['#shorts', '#viral', '#reels', '#tiktok']);
         const hashtagsStr = hashtagsList.map(t => t.startsWith('#') ? t : `#${t}`).join(' ');
 
         // Video URL normalizada
@@ -475,7 +576,7 @@ function renderClipsGallery(clips, fromLibrary = false) {
                         <span class="badge badge-gray">📱 9:16 Vertical</span>
                         ${clip.niche ? `<span class="badge badge-gray">🎯 ${escapeHtml(clip.niche)}</span>` : ''}
                         ${duration > 0 ? `<span class="badge badge-gray">⏱️ ${duration}s</span>` : ''}
-                        ${fileSize > 0 ? `<span class="badge badge-gray">💾 ${fileSize} MB</span>` : ''}
+                        ${sizeText ? `<span class="badge badge-gray">💾 ${escapeHtml(sizeText)}</span>` : ''}
                         ${clip.created_at ? `<span class="badge badge-gray">📅 ${escapeHtml(clip.created_at)}</span>` : ''}
                     </div>
                     <span class="badge-score">⭐ Viral Score: ${score}/10</span>
@@ -628,3 +729,8 @@ function escapeAttribute(string) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 }
+
+// Global compatibility exports
+window.loadLibrary = loadLibrary;
+window.loadClipLibrary = loadLibrary;
+

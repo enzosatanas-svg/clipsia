@@ -572,10 +572,65 @@ select:focus {
     font-size: 0.95rem;
 }
 
-.clips-gallery {
+.results-banner-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.library-toolbar {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.library-search-wrapper {
+    flex: 1;
+    min-width: 260px;
+}
+
+.library-search-input {
+    width: 100%;
+    padding: 11px 16px;
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: var(--transition-fast);
+}
+
+.library-search-input:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+.library-filtered-count {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.clips-gallery,
+.clips-grid,
+#clips-grid {
     display: flex;
     flex-direction: column;
     gap: 30px;
+}
+
+.loading-spin {
+    display: inline-block;
+    animation: rotateSpin 0.75s linear infinite;
+}
+
+@keyframes rotateSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Single Clip Card */
