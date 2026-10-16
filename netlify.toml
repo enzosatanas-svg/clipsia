@@ -4,6 +4,11 @@
 
 [build]
   publish = "public"
+  command = "echo 'Static build ready'"
+
+[build.environment]
+  PIP_ENV = "false"
+  NETLIFY_USE_PIP = "false"
 
 [[headers]]
   for = "/*"
