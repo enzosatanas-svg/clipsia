@@ -71,6 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
     checkBackendHealth();
     // Poll backend health every 15s
     setInterval(checkBackendHealth, 15000);
+    // Cargar biblioteca de clips previamente generados
+    setTimeout(loadLibrary, 800);
 });
 
 function initSettings() {
@@ -323,6 +325,43 @@ function updateProgressUI(percent, message, step) {
 }
 
 // =============================================================================
+// Biblioteca: Carga de clips previos desde /api/library
+// =============================================================================
+async function loadLibrary() {
+    if (!state.backendOnline) return;
+    try {
+        const res = await fetch(`${state.apiUrl}/api/library`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const clips = (data.clips || []).map(c => ({
+            clip_id: c.filename.replace('.mp4', ''),
+            title: c.title,
+            hook: c.hook_text,
+            viral_score: c.viral_score,
+            duration: 0,
+            file_size_mb: c.size_mb,
+            hashtags: c.hashtags ? c.hashtags.split(' ') : ['#viral', '#shorts'],
+            video_url: c.url,
+            thumbnail_url: c.thumbnail_url || null,
+            ai_copy: `🔥 ${c.title}\n\n👀 ${c.hook_text}\n\n${c.description || ''}\n\n${c.hashtags || '#viral #shorts #clipsia'}`,
+            _library_filename: c.filename,
+            niche: c.niche,
+            created_at: c.created_at,
+        }));
+
+        if (clips.length > 0) {
+            DOM.resultsSection.classList.remove('hidden');
+            DOM.resultsSubtitle.innerHTML = `
+                📚 Biblioteca de clips guardados — <strong>${clips.length} clips en formato 9:16</strong> disponibles para descargar.
+            `;
+            renderClipsGallery(clips, true);
+        }
+    } catch (_) {
+        // Backend offline o sin clips aún — silencioso
+    }
+}
+
+// =============================================================================
 // Pipeline Handlers: Success & Error
 // =============================================================================
 function handlePipelineSuccess(data) {
@@ -342,6 +381,8 @@ function handlePipelineSuccess(data) {
     // Scroll suave hacia los resultados
     DOM.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     showToast(`🎉 ¡${clips.length} clips generados exitosamente!`);
+    // Recargar la biblioteca completa para que aparezcan los nuevos clips también
+    setTimeout(loadLibrary, 1500);
 }
 
 function handlePipelineError(errorMsg) {
@@ -354,7 +395,7 @@ function handlePipelineError(errorMsg) {
 // =============================================================================
 // Dynamic DOM Gallery Renderer
 // =============================================================================
-function renderClipsGallery(clips) {
+function renderClipsGallery(clips, fromLibrary = false) {
     DOM.clipsGallery.innerHTML = '';
 
     if (!clips || clips.length === 0) {
@@ -406,8 +447,10 @@ function renderClipsGallery(clips) {
                     <div class="meta-badges">
                         <span class="badge badge-gray">Clip #${index + 1}</span>
                         <span class="badge badge-gray">📱 9:16 Vertical</span>
-                        <span class="badge badge-gray">⏱️ ${duration}s</span>
-                        <span class="badge badge-gray">💾 ${fileSize} MB</span>
+                        ${clip.niche ? `<span class="badge badge-gray">🎯 ${escapeHtml(clip.niche)}</span>` : ''}
+                        ${duration > 0 ? `<span class="badge badge-gray">⏱️ ${duration}s</span>` : ''}
+                        ${fileSize > 0 ? `<span class="badge badge-gray">💾 ${fileSize} MB</span>` : ''}
+                        ${clip.created_at ? `<span class="badge badge-gray">📅 ${escapeHtml(clip.created_at)}</span>` : ''}
                     </div>
                     <span class="badge-score">⭐ Viral Score: ${score}/10</span>
                 </div>
@@ -431,14 +474,19 @@ function renderClipsGallery(clips) {
                     <a href="${fullVideoUrl}" download="${clipId}.mp4" class="btn-primary" target="_blank" rel="noopener">
                         <span>📥</span> Descargar Clip MP4
                     </a>
+                    ${clip._library_filename ? `
+                    <button type="button" class="btn-delete-clip" data-filename="${escapeAttribute(clip._library_filename)}"
+                        style="margin-top:10px;background:rgba(255,46,84,0.15);border:1px solid rgba(255,46,84,0.4);color:#ff2e54;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;width:100%;">
+                        🗑️ Eliminar Clip
+                    </button>` : ''}
                 </div>
             </div>
         `;
 
-        DOM.clipsGallery.appendChild(clipCard);
+    DOM.clipsGallery.appendChild(clipCard);
     });
 
-    // Delegación de eventos para botones de copiado
+    // Delegación de eventos: Copiar copy
     DOM.clipsGallery.querySelectorAll('.btn-copy-action').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const textToCopy = e.currentTarget.getAttribute('data-copy');
@@ -450,13 +498,35 @@ function renderClipsGallery(clips) {
                     e.currentTarget.textContent = '📋 Copiar Copy';
                 }, 2000);
             } catch (err) {
-                // Fallback para navegadores antiguos
                 fallbackCopy(textToCopy);
                 showToast('📋 ¡Texto copiado!');
             }
         });
     });
+
+    // Delegación de eventos: Eliminar clip de la biblioteca
+    DOM.clipsGallery.querySelectorAll('.btn-delete-clip').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const filename = e.currentTarget.getAttribute('data-filename');
+            if (!confirm(`¿Eliminar el clip "${filename}" del servidor? Esta acción no se puede deshacer.`)) return;
+            try {
+                const res = await fetch(`${state.apiUrl}/api/library/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('🗑️ Clip eliminado de la biblioteca.');
+                    // Eliminar la tarjeta visualmente
+                    e.currentTarget.closest('.clip-card')?.remove();
+                    // Recargar biblioteca
+                    setTimeout(loadLibrary, 500);
+                } else {
+                    showToast('⚠️ Error al eliminar el clip.');
+                }
+            } catch (err) {
+                showToast('⚠️ Error de conexión al eliminar.');
+            }
+        });
+    });
 }
+
 
 // =============================================================
 // Helper Utilities
