@@ -59,6 +59,7 @@ body {
 .gradient-text {
     background: linear-gradient(90deg, #DDD6FE 0%, #F472B6 50%, #FDE047 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -688,6 +689,8 @@ select:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
     margin-bottom: 8px;
 }
 
@@ -697,6 +700,13 @@ select:focus {
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.copy-platform-btns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 .btn-copy-action {
@@ -714,6 +724,24 @@ select:focus {
 .btn-copy-action:hover {
     background: rgba(139, 92, 246, 0.3);
     color: #FFFFFF;
+}
+
+.btn-copy-tiktok:hover {
+    background: rgba(0, 242, 234, 0.25);
+    border-color: #00f2fe;
+    color: #ffffff;
+}
+
+.btn-copy-reels:hover {
+    background: rgba(225, 48, 108, 0.25);
+    border-color: #E1306C;
+    color: #ffffff;
+}
+
+.btn-copy-shorts:hover {
+    background: rgba(255, 0, 0, 0.25);
+    border-color: #FF0000;
+    color: #ffffff;
 }
 
 .copy-text {

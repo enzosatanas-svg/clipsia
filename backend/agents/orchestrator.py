@@ -240,6 +240,9 @@ class LeadOrchestratorAgent:
                     "call_to_action": step4_result["call_to_action"],
                     "hashtags": step4_result["hashtags"],
                     "ready_to_publish_copy": step4_result["ready_to_publish_copy"],
+                    "platforms": step4_result.get("platforms", {}),
+                    "best_posting_times": step4_result.get("best_posting_times", []),
+                    "niche_detected": step4_result.get("niche_detected", clip_meta.get("nicho", "General")),
                 },
                 "viral_score": clip_meta["viral_score"],
             }
@@ -254,6 +257,9 @@ class LeadOrchestratorAgent:
                     "job_id": job_id,
                     "title": step4_result["selected_hook"],
                     "hook": step4_result["selected_hook"],
+                    "hook_text": step4_result["selected_hook"],
+                    "niche": step4_result.get("niche_detected", clip_meta.get("nicho", "General")),
+                    "nicho": step4_result.get("niche_detected", clip_meta.get("nicho", "General")),
                     "hashtags": step4_result["hashtags"],
                     "viral_score": clip_meta["viral_score"],
                     "duration": step3_result["duration_seconds"],
@@ -262,6 +268,8 @@ class LeadOrchestratorAgent:
                     "video_url": f"/output/{clip_id}.mp4",
                     "file_size_mb": step3_result["file_size_mb"],
                     "ai_copy": step4_result["ready_to_publish_copy"],
+                    "platforms": step4_result.get("platforms", {}),
+                    "best_posting_times": step4_result.get("best_posting_times", []),
                 }, mf, ensure_ascii=False, indent=2)
 
         # Informe final estructurado del Lead System Agent

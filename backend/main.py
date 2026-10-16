@@ -113,6 +113,10 @@ def _enrich_clip_metadata(filename: str, file_path: Path) -> dict:
     viral_score = meta.get("viral_score") or 8.5
     hashtags = meta.get("hashtags") or "#viral #shorts #clipsia #fyp #contenido"
     description = meta.get("description") or meta.get("texto_descripcion") or ""
+    ai_copy = meta.get("ai_copy") or ""
+    platforms = meta.get("platforms") or {}
+    best_posting_times = meta.get("best_posting_times") or ["12:00 - 14:00", "19:00 - 21:00"]
+    duration = meta.get("duration") or 0
 
     return {
         "filename": filename,
@@ -127,6 +131,10 @@ def _enrich_clip_metadata(filename: str, file_path: Path) -> dict:
         "size_mb": file_size_mb,
         "created_at": created_str,
         "clip_index": int(clip_num) if clip_num.isdigit() else 1,
+        "ai_copy": ai_copy,
+        "platforms": platforms,
+        "best_posting_times": best_posting_times,
+        "duration": duration,
     }
 
 

@@ -432,6 +432,32 @@ function renderClipsGallery(clips, fromLibrary = false) {
             `${hashtagsStr}`
         );
 
+        const tiktokCopy = clip.platforms?.tiktok?.caption || (
+            `🔥 ${hook}\n\n` +
+            `¿Tú qué opinas? 👇 Déjamelo en los comentarios.\n\n` +
+            `${hashtagsStr}`
+        );
+
+        const reelsCopy = clip.platforms?.instagram_reels?.caption || (
+            `🔥 ${title}\n\n` +
+            `👀 ${hook}\n\n` +
+            `💡 Guarda este reel para repasarlo más tarde y compártelo con alguien a quien le sirva.\n\n` +
+            `${hashtagsStr}`
+        );
+
+        const shortsCopy = clip.platforms?.youtube_shorts ? (
+            `${clip.platforms.youtube_shorts.title}\n\n` +
+            `${clip.platforms.youtube_shorts.description}`
+        ) : (
+            `🔥 ${title} | #Shorts\n\n` +
+            `${hook}\n\n` +
+            `${hashtagsStr}`
+        );
+
+        const postingTimes = clip.best_posting_times ? (
+            Array.isArray(clip.best_posting_times) ? clip.best_posting_times.join(' o ') : clip.best_posting_times
+        ) : '12:00 - 14:00 | 18:30 - 21:00';
+
         clipCard.innerHTML = `
             <!-- Left: 9:16 Video Player -->
             <div class="video-frame-9-16">
@@ -461,12 +487,26 @@ function renderClipsGallery(clips, fromLibrary = false) {
                 <!-- Copy Box -->
                 <div class="copy-box">
                     <div class="copy-box-header">
-                        <span class="copy-box-title">📝 Copy & Hashtags para TikTok / Shorts / Reels</span>
-                        <button type="button" class="btn-copy-action" data-copy="${escapeAttribute(fullCopy)}">
-                            📋 Copiar Copy
-                        </button>
+                        <span class="copy-box-title">📝 Estrategia Viral & Copywriting Multi-Plataforma</span>
+                        <div class="copy-platform-btns">
+                            <button type="button" class="btn-copy-action" data-copy="${escapeAttribute(fullCopy)}" title="Copiar estrategia completa">
+                                📋 Todo
+                            </button>
+                            <button type="button" class="btn-copy-action btn-copy-tiktok" data-copy="${escapeAttribute(tiktokCopy)}" title="Copiar copy optimizado para TikTok">
+                                📱 TikTok
+                            </button>
+                            <button type="button" class="btn-copy-action btn-copy-reels" data-copy="${escapeAttribute(reelsCopy)}" title="Copiar caption para Instagram Reels">
+                                📸 Reels
+                            </button>
+                            <button type="button" class="btn-copy-action btn-copy-shorts" data-copy="${escapeAttribute(shortsCopy)}" title="Copiar título y descripción para YouTube Shorts">
+                                ▶️ Shorts
+                            </button>
+                        </div>
                     </div>
                     <div class="copy-text">${escapeHtml(fullCopy)}</div>
+                    <div style="margin-top: 9px; font-size: 0.78rem; color: #94A3B8; display: flex; align-items: center; gap: 6px;">
+                        <span>⏰ <strong>Horarios recomendados:</strong> ${escapeHtml(postingTimes)}</span>
+                    </div>
                 </div>
 
                 <!-- Actions -->
@@ -489,13 +529,15 @@ function renderClipsGallery(clips, fromLibrary = false) {
     // Delegación de eventos: Copiar copy
     DOM.clipsGallery.querySelectorAll('.btn-copy-action').forEach(btn => {
         btn.addEventListener('click', async (e) => {
-            const textToCopy = e.currentTarget.getAttribute('data-copy');
+            const button = e.currentTarget;
+            const originalLabel = button.textContent;
+            const textToCopy = button.getAttribute('data-copy');
             try {
                 await navigator.clipboard.writeText(textToCopy);
-                showToast('📋 ¡Copy y Hashtags copiados!');
-                e.currentTarget.textContent = '✅ Copiado';
+                showToast('📋 ¡Copiado al portapapeles!');
+                button.textContent = '✅ Copiado';
                 setTimeout(() => {
-                    e.currentTarget.textContent = '📋 Copiar Copy';
+                    button.textContent = originalLabel;
                 }, 2000);
             } catch (err) {
                 fallbackCopy(textToCopy);
